@@ -1,0 +1,21 @@
+{
+    "name": "alexandresalome/functional-php",
+    "type": "library",
+    "description": "A library for functional PHP",
+    "autoload": {
+        "psr-4": {
+            "FunctionalPhp\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "FunctionalPhp\\Tests\\": "tests"
+        }
+    },
+    "require-dev": {
+        "symfony/phpunit-bridge": "^5.2",
+        "symfony/var-dumper": "^5.2",
+        "symfony/serializer": "^5.2",
+        "react/event-loop": "^1.1"
+    }
+}
