@@ -2,6 +2,8 @@
 
 namespace FunctionalPhp;
 
+use FunctionalPhp\Builder\NodeBuilderInterface;
+
 interface SessionInterface
 {
     /**

@@ -1,12 +1,13 @@
 <?php
 
-namespace FunctionalPhp;
+namespace FunctionalPhp\Builder;
 
 use FunctionalPhp\Bridge\Symfony\Deserializer;
 use FunctionalPhp\Closure\ArrayCombine;
 use FunctionalPhp\Closure\Callback;
 use FunctionalPhp\Closure\JsonDecode;
 use FunctionalPhp\Closure\JsonEncode;
+use FunctionalPhp\SessionInterface;
 
 class NodeBuilder implements NodeBuilderInterface
 {
@@ -24,7 +25,7 @@ class NodeBuilder implements NodeBuilderInterface
         return $this->closure;
     }
 
-    public function write(string $type, array $options = []): NodeBuilderInterface
+    public function then(string $type, array $options = []): NodeBuilderInterface
     {
         $node = $this->session->from($type, $options);
         $this->session->chain($this->closure, $node->getClosure());
@@ -34,35 +35,26 @@ class NodeBuilder implements NodeBuilderInterface
 
     public function combineKeys(array $keys): NodeBuilderInterface
     {
-        return $this->write(
-            ArrayCombine::class,
-            ['keys' => $keys],
-        );
+        return $this->then(ArrayCombine::class, ['keys' => $keys]);
     }
 
     public function deserialize(string $class): NodeBuilderInterface
     {
-        return $this->write(
-            Deserializer::class,
-            [],
-        );
+        return $this->then(Deserializer::class, []);
     }
 
     public function callback(callable $param): NodeBuilderInterface
     {
-        return $this->write(
-            Callback::class,
-            ['callback' => $param]
-        );
+        return $this->then(Callback::class, ['callback' => $param]);
     }
 
     public function jsonDecode(): NodeBuilderInterface
     {
-        return $this->write(JsonDecode::class);
+        return $this->then(JsonDecode::class);
     }
 
     public function jsonEncode(): NodeBuilderInterface
     {
-        return $this->write(JsonEncode::class);
+        return $this->then(JsonEncode::class);
     }
 }

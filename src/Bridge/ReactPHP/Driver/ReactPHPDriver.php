@@ -5,6 +5,7 @@ namespace FunctionalPhp\Bridge\ReactPHP\Driver;
 use FunctionalPhp\Driver\DriverInterface;
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
+use React\EventLoop\TimerInterface;
 
 class ReactPHPDriver implements DriverInterface
 {

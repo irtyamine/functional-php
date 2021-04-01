@@ -3,6 +3,8 @@
 namespace FunctionalPhp;
 
 use FunctionalPhp\Bridge\ReactPHP\Driver\ReactPHPDriver;
+use FunctionalPhp\Builder\NodeBuilder;
+use FunctionalPhp\Builder\NodeBuilderInterface;
 use FunctionalPhp\ClosureFactory\ClosureFactoryInterface;
 use FunctionalPhp\ClosureFactory\DefaultFactory;
 use FunctionalPhp\Driver\DriverInterface;
@@ -46,10 +48,17 @@ class Session implements SessionInterface
 
         try {
             $this->driver->start();
-            $this->doStart();
+            foreach ($this->registry->getClosures() as $closure) {
+                if ($this->registry->isInputOutput($closure)[0]) {
+
+                }
+            }
             $this->driver->run();
+            dump("finish running");
         } catch (\Throwable $error) {
             $this->error = $error;
+            throw $error;
+        } finally {
             $this->stop();
         }
     }
@@ -65,6 +74,8 @@ class Session implements SessionInterface
         }
 
         $this->finishedAt = new \DateTimeImmutable();
+        $this->driver->stop();
+        $this->driver->run();
     }
 
     /**
@@ -89,14 +100,5 @@ class Session implements SessionInterface
     public function getError(): ?\Throwable
     {
         return $this->error;
-    }
-
-    private function doStart(): void
-    {
-        // For each registered closure
-        foreach ($this->registry->getClosures() as $closure) {
-            // Verify type (closure that returns a Generator)
-            // Check if it needs to be started
-        }
     }
 }

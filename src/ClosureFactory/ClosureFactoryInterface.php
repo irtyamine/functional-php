@@ -12,5 +12,5 @@ interface ClosureFactoryInterface
     /**
      * @param array<string, mixed> $options
      */
-    public function create(string $type, array $options = []): \Closure;
+    public function create(mixed $type, array $options = []): \Closure;
 }

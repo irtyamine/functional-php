@@ -13,7 +13,7 @@ class Callback
     }
 
     /**
-     * @param array<mixed> ...$args
+     * @param array<mixed> $args
      * @return \Generator<mixed>
      */
     public function __invoke(...$args): \Generator
