@@ -72,6 +72,11 @@ class Graph
         return count($this->registry->getInformation($closure, 'from')) === 0;
     }
 
+    public function isEnd(\Closure $closure): bool
+    {
+        return count($this->registry->getInformation($closure, 'to')) === 0;
+    }
+
     /**
      * @return \Generator<\Closure>
      */

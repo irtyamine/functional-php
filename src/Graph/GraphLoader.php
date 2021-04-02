@@ -44,11 +44,30 @@ class GraphLoader
             }
 
             $single = $generator->current();
+            $this->deliver($closure, $single);
             $generator->next();
+        });
+    }
 
+    private function deliver(\Closure $closure, mixed $value): void
+    {
+        $this->driver->future(function () use ($closure, $value) {
             foreach ($this->graph->getTargets($closure) as $target) {
-                $this->driver->future(function () use ($target, $single) {
-                    $target($single);
+                $this->driver->future(function () use ($target, $value) {
+                    $result = $target($value);
+                    if (!$result instanceof \Generator) {
+                        $this->deliver($target, $result);
+
+                        return;
+                    }
+
+                    $this->driver->future(function () use ($target, $result) {
+                        foreach ($result as $one) {
+                            $this->driver->future(function () use ($target, $one) {
+                                $this->deliver($target, $one);
+                            });
+                        }
+                    });
                 });
             }
         });

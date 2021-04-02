@@ -1,7 +1,5 @@
 <?php
 
-namespace Main;
-
 use FunctionalPhp\Closure\StaticArray;
 use FunctionalPhp\Session;
 use Symfony\Component\ErrorHandler\Debug;
@@ -15,6 +13,6 @@ $session = new Session();
 $values = ['hello', 'world', 'and', 'others', 'too', '=)'];
 $source = $session->from(StaticArray::class, ['values' => $values]);
 
-$source->then('dump');
+$source->then('strtoupper')->then('dump');
 
 $session->run();

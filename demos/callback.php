@@ -1,21 +1,24 @@
 <?php
 
-use FunctionalPhp\SessionInterface;
+use FunctionalPhp\Closure\StaticArray;
+use FunctionalPhp\Session;
 
-/** @var SessionInterface $session */
-$session
-    ->read('array', ['values' => [1, 2, 3]])
+require_once __DIR__.'/../vendor/autoload.php';
 
-    // Send multiple values per message
-    ->callback(function (int $x) {
+$session = new Session();
+
+$from = $session->from(StaticArray::class, ['values' => [1, 2, 3]]);
+
+$from->then(function ($x) {
         yield $x;
         yield $x + 1;
         yield $x + 2;
     })
-    // Or return a single
-    ->callback(function (int $x): string {
+    ->then(function (int $x): string {
         return 'Now, it\'s '.$x;
     })
-
-    ->write('console')
 ;
+
+$from->then('dump');
+
+$session->run();
