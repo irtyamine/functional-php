@@ -2,59 +2,28 @@
 
 namespace FunctionalPhp\Builder;
 
-use FunctionalPhp\Bridge\Symfony\Deserializer;
-use FunctionalPhp\Closure\ArrayCombine;
-use FunctionalPhp\Closure\Callback;
-use FunctionalPhp\Closure\JsonDecode;
-use FunctionalPhp\Closure\JsonEncode;
-use FunctionalPhp\SessionInterface;
+use FunctionalPhp\ClosureFactory\ClosureFactoryInterface;
+use FunctionalPhp\Graph\Graph;
 
 class NodeBuilder implements NodeBuilderInterface
 {
-    private SessionInterface $session;
+    private Graph $graph;
+    private ClosureFactoryInterface $closureFactory;
     private \Closure $closure;
 
-    public function __construct(SessionInterface $session, \Closure $closure)
+    public function __construct(Graph $graph, ClosureFactoryInterface $closureFactory, \Closure $closure)
     {
-        $this->session = $session;
+        $this->graph = $graph;
+        $this->closureFactory = $closureFactory;
         $this->closure = $closure;
     }
 
-    public function getClosure(): \Closure
+    public function then(mixed $type, array $options = []): NodeBuilderInterface
     {
-        return $this->closure;
-    }
+        $new = $this->closureFactory->create($type, $options);
+        $this->graph->add($new);
+        $this->graph->chain($this->closure, $new);
 
-    public function then(string $type, array $options = []): NodeBuilderInterface
-    {
-        $node = $this->session->from($type, $options);
-        $this->session->chain($this->closure, $node->getClosure());
-
-        return $node;
-    }
-
-    public function combineKeys(array $keys): NodeBuilderInterface
-    {
-        return $this->then(ArrayCombine::class, ['keys' => $keys]);
-    }
-
-    public function deserialize(string $class): NodeBuilderInterface
-    {
-        return $this->then(Deserializer::class, []);
-    }
-
-    public function callback(callable $param): NodeBuilderInterface
-    {
-        return $this->then(Callback::class, ['callback' => $param]);
-    }
-
-    public function jsonDecode(): NodeBuilderInterface
-    {
-        return $this->then(JsonDecode::class);
-    }
-
-    public function jsonEncode(): NodeBuilderInterface
-    {
-        return $this->then(JsonEncode::class);
+        return new self($this->graph, $this->closureFactory, $new);
     }
 }

@@ -12,9 +12,9 @@ Debug::enable();
 
 $session = new Session();
 
-$session
-    ->from(StaticArray::class, ['values' => [1, 2, 3, 4, 5, 6]])
-    ->then('dump')
-;
+$values = ['hello', 'world', 'and', 'others', 'too', '=)'];
+$source = $session->from(StaticArray::class, ['values' => $values]);
+
+$source->then('dump');
 
 $session->run();

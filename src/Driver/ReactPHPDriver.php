@@ -1,8 +1,7 @@
 <?php
 
-namespace FunctionalPhp\Bridge\ReactPHP\Driver;
+namespace FunctionalPhp\Driver;
 
-use FunctionalPhp\Driver\DriverInterface;
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
@@ -31,14 +30,23 @@ class ReactPHPDriver implements DriverInterface
         $this->loop->addTimer($delay, $callable);
     }
 
+    /**
+     * `$callable` receive following arguments:
+     *
+     * - $stop: a callable to stop the interval
+     *
+     * @param int|float $interval
+     * @param callable $callable
+     */
     public function interval(int|float $interval, callable $callable): void
     {
-        $this->loop->addPeriodicTimer($interval, $callable);
-    }
+        $this->loop->addPeriodicTimer($interval, function (TimerInterface $timer) use ($callable) {
+            $stop = function () use ($timer): void {
+                $this->loop->cancelTimer($timer);
+            };
 
-    public function start(): void
-    {
-        // Nothing to do
+            $callable($stop);
+        });
     }
 
     public function stop(): void

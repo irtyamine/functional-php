@@ -2,6 +2,9 @@
 
 namespace FunctionalPhp\Graph;
 
+/**
+ * Holds Closure collection and information about them.
+ */
 class Registry
 {
     /** @var \SplObjectStorage<\Closure, array<string, mixed>> */
@@ -50,5 +53,17 @@ class Registry
         }
 
         $this->entries[$closure][$name] = $value;
+    }
+
+    /**
+     * @return \Generator<\Closure>
+     */
+    public function getClosures(): \Generator
+    {
+        $this->entries->rewind();
+        for (;$this->entries->valid();) {
+            yield $this->entries->current();
+            $this->entries->next();
+        }
     }
 }
