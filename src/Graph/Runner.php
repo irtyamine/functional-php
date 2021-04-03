@@ -68,43 +68,14 @@ class Runner
      */
     public function tick(): void
     {
-        if (!empty($this->pushStack)) {
-            [$closure, $args] = array_shift($this->pushStack);
-            /** @var \Closure $closure */
-            $args = is_array($args) ? $args : [$args];
-            /** @var \Generator<mixed> $generator */
-            $generator = $closure(...$args);
-            $generator->current();
-            if (!empty($this->targets[$closure])) {
-                $this->runningGenerators[$generator] = $this->targets[$closure];
-            }
-        } elseif (empty($this->runningGenerators)) {
-            return;
+        $i = 0;
+        while ($i < 100 && $this->doTick()) {
+            $i++;
         }
 
-        if (!$this->runningGenerators->valid()) {
-            $this->runningGenerators->rewind();
+        if ($i === 100) {
+            $this->driver->future([$this, 'tick']);
         }
-
-        if (!$this->runningGenerators->valid()) {
-            return;
-        }
-
-        /** @var \Generator<mixed> $generator */
-        $generator = $this->runningGenerators->current();
-
-        if (!$generator->valid()) {
-            unset($this->runningGenerators[$generator]);
-        } else {
-            $value = $generator->current();
-            foreach ($this->runningGenerators->getInfo() as $target) {
-                $this->pushStack[] = [$target, $value];
-            }
-            $generator->next();
-            $this->runningGenerators->next();
-        }
-
-        $this->driver->future([$this, 'tick']);
     }
 
     private function load(): void
@@ -121,5 +92,46 @@ class Runner
         }
 
         $this->driver->future([$this, 'tick']);
+    }
+
+    private function doTick(): bool
+    {
+        if (!empty($this->pushStack)) {
+            [$closure, $args] = array_shift($this->pushStack);
+            /** @var \Closure $closure */
+            $args = is_array($args) ? $args : [$args];
+            /** @var \Generator<mixed> $generator */
+            $generator = $closure(...$args);
+            $generator->current();
+            if (!empty($this->targets[$closure])) {
+                $this->runningGenerators[$generator] = $this->targets[$closure];
+            }
+        } elseif (empty($this->runningGenerators)) {
+            return false;
+        }
+
+        if (!$this->runningGenerators->valid()) {
+            $this->runningGenerators->rewind();
+        }
+
+        if (!$this->runningGenerators->valid()) {
+            return false;
+        }
+
+        /** @var \Generator<mixed> $generator */
+        $generator = $this->runningGenerators->current();
+
+        if (!$generator->valid()) {
+            unset($this->runningGenerators[$generator]);
+        } else {
+            $value = $generator->current();
+            foreach ($this->runningGenerators->getInfo() as $target) {
+                $this->pushStack[] = [$target, $value];
+            }
+            $generator->next();
+            $this->runningGenerators->next();
+        }
+
+        return true;
     }
 }
