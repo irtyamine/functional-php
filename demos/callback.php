@@ -7,18 +7,16 @@ require_once __DIR__.'/../vendor/autoload.php';
 
 $session = new Session();
 
-$from = $session->from(StaticArray::class, ['values' => [1, 2, 3]]);
-
-$from->then(function ($x) {
+$session
+    ->from(StaticArray::class, ['values' => [1, 2, 3]])
+    ->then(function ($x) {
         yield $x;
-        yield $x + 1;
-        yield $x + 2;
+        yield $x + 10;
     })
     ->then(function (int $x): string {
         return 'Now, it\'s '.$x;
     })
+    ->then('dump')
 ;
-
-$from->then('dump');
 
 $session->run();

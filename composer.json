@@ -18,6 +18,8 @@
         "symfony/serializer": "^5.2",
         "react/event-loop": "^1.1",
         "symfony/error-handler": "^5.2",
-        "react/stream": "^1.1"
+        "react/stream": "^1.1",
+        "monolog/monolog": "^2.2",
+        "symfony/console": "^5.2"
     }
 }

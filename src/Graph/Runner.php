@@ -4,7 +4,7 @@ namespace FunctionalPhp\Graph;
 
 use FunctionalPhp\Driver\DriverInterface;
 
-class GraphLoader
+class Runner
 {
     private Graph $graph;
     private DriverInterface $driver;
@@ -15,16 +15,15 @@ class GraphLoader
         $this->driver = $driver;
     }
 
-    public function load(): void
+    public function run(): void
     {
-        foreach ($this->graph->getClosures() as $closure) {
-            $this->loadClosure($closure);
-        }
+        $this->load();
+        $this->driver->run();
     }
 
-    private function loadClosure(\Closure $closure): void
+    private function load(): void
     {
-        if ($this->graph->isSource($closure)) {
+        foreach ($this->graph->getSources() as $closure) {
             $this->loadSource($closure);
         }
     }

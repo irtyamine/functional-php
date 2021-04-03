@@ -9,19 +9,23 @@ use FunctionalPhp\ClosureFactory\DefaultFactory;
 use FunctionalPhp\Driver\DefaultDriver;
 use FunctionalPhp\Driver\DriverInterface;
 use FunctionalPhp\Graph\Graph;
-use FunctionalPhp\Graph\GraphLoader;
+use FunctionalPhp\Graph\Runner;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 class Session implements SessionInterface
 {
     private Graph $graph;
     private DriverInterface $driver;
     private ClosureFactoryInterface $closureFactory;
+    private LoggerInterface $logger;
 
-    public function __construct(DriverInterface $driver = null, ClosureFactoryInterface $closureFactory = null)
+    public function __construct(DriverInterface $driver = null, ClosureFactoryInterface $closureFactory = null, ?LoggerInterface $logger = null)
     {
-        $this->graph = new Graph();
+        $this->graph = new Graph(logger: $logger);
         $this->driver = $driver ?? new DefaultDriver();
         $this->closureFactory = $closureFactory ?? new DefaultFactory();
+        $this->logger = $logger ?? new NullLogger();
     }
 
     public function from(string $type, array $options = []): NodeBuilderInterface
@@ -35,8 +39,9 @@ class Session implements SessionInterface
     public function run(): void
     {
         $this->graph->validate();
-        $loader = new GraphLoader($this->graph, $this->driver);
-        $loader->load();
-        $this->driver->run();
+        $this->logger->info('Start running the graph');
+        $loader = new Runner($this->graph, $this->driver);
+        $loader->run();
+        $this->logger->info('Finished running the graph');
     }
 }
