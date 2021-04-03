@@ -10,6 +10,7 @@ use FunctionalPhp\Driver\DefaultDriver;
 use FunctionalPhp\Driver\DriverInterface;
 use FunctionalPhp\Graph\Graph;
 use FunctionalPhp\Graph\Runner;
+use FunctionalPhp\Metadata\DefaultMetadataFactory;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -22,9 +23,10 @@ class Session implements SessionInterface
 
     public function __construct(DriverInterface $driver = null, ClosureFactoryInterface $closureFactory = null, ?LoggerInterface $logger = null)
     {
-        $this->graph = new Graph(logger: $logger);
+        $metadataFactory = new DefaultMetadataFactory();
+        $this->graph = new Graph($metadataFactory, $logger);
         $this->driver = $driver ?? new DefaultDriver();
-        $this->closureFactory = $closureFactory ?? new DefaultFactory();
+        $this->closureFactory = $closureFactory ?? new DefaultFactory($metadataFactory);
         $this->logger = $logger ?? new NullLogger();
     }
 
@@ -38,10 +40,6 @@ class Session implements SessionInterface
 
     public function run(): void
     {
-        $this->graph->validate();
-        $this->logger->info('Start running the graph');
-        $loader = new Runner($this->graph, $this->driver);
-        $loader->run();
-        $this->logger->info('Finished running the graph');
+        (new Runner($this->graph, $this->driver, $this->logger))->run();
     }
 }

@@ -18,6 +18,12 @@ class Callback
      */
     public function __invoke(...$args): \Generator
     {
-        yield from call_user_func_array($this->callback, $args);
+        $result = call_user_func_array($this->callback, $args);
+
+        if ($result instanceof \Generator) {
+            return $result;
+        }
+
+        yield $result;
     }
 }

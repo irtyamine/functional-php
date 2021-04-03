@@ -16,6 +16,15 @@ class DefaultMetadataFactory implements MetadataFactoryInterface
             return new ClosureParameter($name, $type, $required, $default);
         }, $metadata->getParameters());
 
-        return new ClosureMetadata($parameters);
+        $returnType = $metadata->getReturnType();
+        if (null === $returnType) {
+            $returnType = 'null';
+        } elseif ($returnType instanceof \ReflectionNamedType) {
+            $returnType = $returnType->getName();
+        } else {
+            $returnType = 'unknown';
+        }
+
+        return new ClosureMetadata($parameters, $returnType);
     }
 }

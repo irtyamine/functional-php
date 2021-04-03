@@ -3,7 +3,6 @@
 namespace FunctionalPhp\Graph;
 
 use FunctionalPhp\Metadata\ClosureMetadata;
-use FunctionalPhp\Metadata\DefaultMetadataFactory;
 use FunctionalPhp\Metadata\MetadataFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -14,10 +13,10 @@ class Graph
     private MetadataFactoryInterface $metadataFactory;
     private LoggerInterface $logger;
 
-    public function __construct(?MetadataFactoryInterface $metadataFactory = null, ?LoggerInterface $logger = null)
+    public function __construct(MetadataFactoryInterface $metadataFactory, ?LoggerInterface $logger = null)
     {
         $this->registry = new Registry();
-        $this->metadataFactory = $metadataFactory ?? new DefaultMetadataFactory();
+        $this->metadataFactory = $metadataFactory;
         $this->logger = $logger ?? new NullLogger();
     }
 
@@ -49,7 +48,6 @@ class Graph
 
     public function validate(): void
     {
-        $this->logger->debug('Validating the graph');
         foreach ($this->getClosures() as $closure) {
             $this->validateClosure($closure);
         }
@@ -61,18 +59,6 @@ class Graph
     public function getClosures(): \Generator
     {
         yield from $this->registry->getClosures();
-    }
-
-    /**
-     * @return \Generator<\Closure>
-     */
-    public function getSources(): \Generator
-    {
-        foreach ($this->getClosures() as $closure) {
-            if ($this->isSource($closure)) {
-                yield $closure;
-            }
-        }
     }
 
     public function getMetadataFor(\Closure $closure): ClosureMetadata

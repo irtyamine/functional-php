@@ -6,6 +6,7 @@ use FunctionalPhp\Closure\ArrayCombine;
 use FunctionalPhp\Closure\Callback;
 use FunctionalPhp\Closure\JsonDecode;
 use FunctionalPhp\Closure\JsonEncode;
+use FunctionalPhp\Closure\Range;
 use FunctionalPhp\Closure\StaticArray;
 
 class ConstructorFactory implements ClosureFactoryInterface
@@ -15,6 +16,7 @@ class ConstructorFactory implements ClosureFactoryInterface
         Callback::class,
         JsonDecode::class,
         JsonEncode::class,
+        Range::class,
         StaticArray::class,
     ];
 

@@ -2,6 +2,8 @@
 
 namespace FunctionalPhp\ClosureFactory;
 
+use FunctionalPhp\Closure\Callback;
+
 class CallableFactory implements ClosureFactoryInterface
 {
     public function supports(mixed $type, array $options = []): bool
@@ -12,9 +14,12 @@ class CallableFactory implements ClosureFactoryInterface
     public function create(mixed $type, array $options = []): \Closure
     {
         if ($type instanceof \Closure) {
-            return $type;
+            $returnType = (new \ReflectionFunction($type));
+            if ($returnType && $returnType instanceof \ReflectionNamedType && $returnType->getName() === 'Generator') {
+                return $type;
+            }
         }
 
-        return \Closure::fromCallable($type);
+        return \Closure::fromCallable(new Callback($type));
     }
 }

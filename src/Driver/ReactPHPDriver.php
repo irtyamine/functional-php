@@ -31,21 +31,16 @@ class ReactPHPDriver implements DriverInterface
     }
 
     /**
-     * `$callable` receive following arguments:
-     *
-     * - $stop: a callable to stop the interval
-     *
      * @param int|float $interval
      * @param callable $callable
      */
     public function interval(int|float $interval, callable $callable): void
     {
         $this->loop->addPeriodicTimer($interval, function (TimerInterface $timer) use ($callable) {
-            $stop = function () use ($timer): void {
+            $result = $callable();
+            if ($result === false) {
                 $this->loop->cancelTimer($timer);
-            };
-
-            $callable($stop);
+            }
         });
     }
 
