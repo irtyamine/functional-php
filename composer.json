@@ -12,11 +12,13 @@
             "FunctionalPhp\\Tests\\": "tests"
         }
     },
+    "require": {
+        "react/event-loop": "^1.1"
+    },
     "require-dev": {
         "symfony/phpunit-bridge": "^5.2",
         "symfony/var-dumper": "^5.2",
         "symfony/serializer": "^5.2",
-        "react/event-loop": "^1.1",
         "symfony/error-handler": "^5.2",
         "react/stream": "^1.1",
         "monolog/monolog": "^2.2",

@@ -30,6 +30,11 @@ class Session implements SessionInterface
         $this->logger = $logger ?? new NullLogger();
     }
 
+    public function getGraph(): Graph
+    {
+        return $this->graph;
+    }
+
     public function from(string $type, array $options = []): NodeBuilderInterface
     {
         $closure = $this->closureFactory->create($type, $options);

@@ -35,7 +35,7 @@ class Runner
      *
      * @var \SplObjectStorage<\Generator, \Closure[]>
      */
-    private \SplObjectStorage $runningGenerators;
+    private \SplObjectStorage $generators;
 
     /**
      * List of values to be pushed to graph's closure.
@@ -50,7 +50,7 @@ class Runner
         $this->driver = $driver;
         $this->logger = $logger ?? new NullLogger();
         $this->targets = new \SplObjectStorage();
-        $this->runningGenerators = new \SplObjectStorage();
+        $this->generators = new \SplObjectStorage();
     }
 
     public function run(): void
@@ -104,32 +104,32 @@ class Runner
             $generator = $closure(...$args);
             $generator->current();
             if (!empty($this->targets[$closure])) {
-                $this->runningGenerators[$generator] = $this->targets[$closure];
+                $this->generators[$generator] = $this->targets[$closure];
             }
-        } elseif (empty($this->runningGenerators)) {
+        } elseif (empty($this->generators)) {
             return false;
         }
 
-        if (!$this->runningGenerators->valid()) {
-            $this->runningGenerators->rewind();
+        if (!$this->generators->valid()) {
+            $this->generators->rewind();
         }
 
-        if (!$this->runningGenerators->valid()) {
+        if (!$this->generators->valid()) {
             return false;
         }
 
         /** @var \Generator<mixed> $generator */
-        $generator = $this->runningGenerators->current();
+        $generator = $this->generators->current();
 
         if (!$generator->valid()) {
-            unset($this->runningGenerators[$generator]);
+            unset($this->generators[$generator]);
         } else {
             $value = $generator->current();
-            foreach ($this->runningGenerators->getInfo() as $target) {
+            foreach ($this->generators->getInfo() as $target) {
                 $this->pushStack[] = [$target, $value];
             }
             $generator->next();
-            $this->runningGenerators->next();
+            $this->generators->next();
         }
 
         return true;

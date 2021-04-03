@@ -79,6 +79,11 @@ class Graph
         return count($this->registry->getInformation($closure, 'from')) === 0;
     }
 
+    public function isEnd(\Closure $closure): bool
+    {
+        return count($this->registry->getInformation($closure, 'to')) === 0;
+    }
+
     /**
      * @return \Generator<\Closure>
      */
@@ -90,6 +95,21 @@ class Graph
         for (;$to->valid();) {
             yield $to->current();
             $to->next();
+        }
+    }
+
+    /**
+     * @return \Generator<mixed>
+     */
+    public function getEdges(): \Generator
+    {
+        foreach ($this->getClosures() as $closure) {
+            $to = $this->registry->getInformation($closure, 'to');
+            $to->rewind();
+            for (;$to->valid();) {
+                yield [$closure, $to->current(), $to->getInfo()];
+                $to->next();
+            }
         }
     }
 }

@@ -3,9 +3,7 @@
 use FunctionalPhp\Closure\StaticArray;
 use FunctionalPhp\Session;
 
-require_once __DIR__.'/../vendor/autoload.php';
-
-$session = new Session();
+/* @var Session $session */
 
 $session
     ->from(StaticArray::class, ['values' => [1, 2, 3]])
@@ -18,5 +16,3 @@ $session
     })
     ->then('dump')
 ;
-
-$session->run();
