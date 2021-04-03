@@ -30,11 +30,6 @@ class Session implements SessionInterface
         $this->logger = $logger ?? new NullLogger();
     }
 
-    public function getGraph(): Graph
-    {
-        return $this->graph;
-    }
-
     public function from(string $type, array $options = []): NodeBuilderInterface
     {
         $closure = $this->closureFactory->create($type, $options);
@@ -43,8 +38,8 @@ class Session implements SessionInterface
         return new NodeBuilder($this->graph, $this->closureFactory, $closure);
     }
 
-    public function run(): void
+    public function run(?callable $monitor = null): void
     {
-        (new Runner($this->graph, $this->driver, $this->logger))->run();
+        (new Runner($this->graph, $this->driver, $this->logger))->run($monitor);
     }
 }

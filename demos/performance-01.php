@@ -8,7 +8,6 @@ use FunctionalPhp\Session;
 $max = 100_000;
 $counterA = 0;
 
-$session = new Session();
 $session
     ->from(Range::class, ['from' => 1, 'to' => $max])
     ->then(function (int $x) {

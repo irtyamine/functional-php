@@ -31,11 +31,25 @@ class Runner
     private \SplObjectStorage $targets;
 
     /**
+     * Execution data.
+     *
+     * @var \SplObjectStorage<\Closure, mixed>
+     */
+    private \SplObjectStorage $closureStats;
+
+    /**
      * List of running generators and their targets.
      *
      * @var \SplObjectStorage<\Generator, \Closure[]>
      */
     private \SplObjectStorage $generators;
+
+    /**
+     * Execution data.
+     *
+     * @var \SplObjectStorage<\Generator, \Closure>
+     */
+    private \SplObjectStorage $closureByGenerator;
 
     /**
      * List of values to be pushed to graph's closure.
@@ -50,13 +64,38 @@ class Runner
         $this->driver = $driver;
         $this->logger = $logger ?? new NullLogger();
         $this->targets = new \SplObjectStorage();
+        $this->closureStats = new \SplObjectStorage();
         $this->generators = new \SplObjectStorage();
+        $this->closureByGenerator = new \SplObjectStorage();
     }
 
-    public function run(): void
+    public function run(?callable $monitor = null): void
     {
         $this->graph->validate();
         $this->logger->info('Loading the graph');
+        if ($monitor) {
+            $this->driver->interval(1, function () use ($monitor): bool {
+                $data = [
+                    'push_stack' => count($this->pushStack),
+                    'generators' => count($this->generators),
+                    'closures' => [],
+                ];
+
+                foreach ($this->closureStats as $closure) {
+                    $id = substr(md5(spl_object_hash($closure)), 0, 8);
+                    $data['closures'][] = [
+                        'id' => $id,
+                        'running' => $this->closureStats[$closure]->running,
+                        'received' => $this->closureStats[$closure]->received,
+                        'sent' => $this->closureStats[$closure]->sent,
+                    ];
+                }
+
+                $monitor($data);
+
+                return !(empty($this->pushStack) && count($this->generators) === 0);
+            });
+        }
         $this->load();
         $this->logger->info('Start running the graph');
         $this->driver->run();
@@ -89,6 +128,11 @@ class Runner
             }
 
             $this->targets[$closure] = iterator_to_array($this->graph->getTargets($closure));
+            $this->closureStats[$closure] = (object)[
+                'running' => 0,
+                'received' => 0,
+                'sent' => 0,
+            ];
         }
 
         $this->driver->future([$this, 'tick']);
@@ -102,11 +146,18 @@ class Runner
             $args = is_array($args) ? $args : [$args];
             /** @var \Generator<mixed> $generator */
             $generator = $closure(...$args);
-            $generator->current();
+            $this->closureStats[$closure]->received++;
             if (!empty($this->targets[$closure])) {
+                $this->closureStats[$closure]->running++;
+                $this->closureByGenerator[$generator] = $closure;
                 $this->generators[$generator] = $this->targets[$closure];
+            } else {
+                // Complete output generators
+                while ($generator->valid()) {
+                    $generator->next();
+                }
             }
-        } elseif (empty($this->generators)) {
+        } elseif (count($this->generators) === 0) {
             return false;
         }
 
@@ -120,14 +171,20 @@ class Runner
 
         /** @var \Generator<mixed> $generator */
         $generator = $this->generators->current();
+        $closure = $this->closureByGenerator[$generator];
 
         if (!$generator->valid()) {
-            unset($this->generators[$generator]);
+            $this->closureStats[$closure]->running--;
+            unset(
+                $this->generators[$generator],
+                $this->closureByGenerator[$generator]
+            );
         } else {
             $value = $generator->current();
             foreach ($this->generators->getInfo() as $target) {
                 $this->pushStack[] = [$target, $value];
             }
+            $this->closureStats[$closure]->sent++;
             $generator->next();
             $this->generators->next();
         }
