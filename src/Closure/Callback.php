@@ -21,9 +21,9 @@ class Callback
         $result = call_user_func_array($this->callback, $args);
 
         if ($result instanceof \Generator) {
-            return $result;
+            yield from $result;
+        } else {
+            yield $result;
         }
-
-        yield $result;
     }
 }

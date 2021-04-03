@@ -12,8 +12,8 @@ class DefaultFactoryTest extends TestCase
         $factory = new DefaultFactory();
 
         // string callback
-        $result = $factory->create('implode')(', ', [2, 3]);
-        self::assertSame('2, 3', $result);
+        $result = iterator_to_array($factory->create('implode')(', ', [2, 3]));
+        self::assertSame(['2, 3'], $result);
     }
 
         public function testCreateClosure(): void
@@ -21,10 +21,10 @@ class DefaultFactoryTest extends TestCase
         $factory = new DefaultFactory();
 
         // Closure
-        $result = $factory->create(function ($left, $right) {
+        $result = iterator_to_array($factory->create(function ($left, $right) {
             return $left + $right;
-        })(1, 3);
+        })(1, 3));
 
-        self::assertSame(4, $result);
+        self::assertSame([4], $result);
     }
 }

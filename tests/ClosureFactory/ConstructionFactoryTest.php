@@ -15,7 +15,7 @@ class ConstructionFactoryTest extends TestCase
 
         self::assertInstanceOf(\Closure::class, $closure);
 
-        $result = $closure('FOO');
-        self::assertSame($result, 'foo');
+        $result = iterator_to_array($closure('FOO'));
+        self::assertSame(['foo'], $result);
     }
 }
